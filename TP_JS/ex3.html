@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exercice 3 - Quiz Amélioré</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .progress {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .quiz-section {
+            display: none;
+        }
+
+        .quiz-section.active {
+            display: block;
+        }
+
+        .start-section {
+            text-align: center;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+        }
+
+        .question {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #764ba2;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #63408a;
+        }
+
+        .feedback {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback.wrong {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .correct-answer {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e7f3ff;
+            border-left: 3px solid #2196F3;
+            border-radius: 3px;
+            font-size: 14px;
+            color: #0c5aa0;
+        }
+
+        .results-section {
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .score-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .excellent {
+            color: #28a745;
+        }
+
+        .good {
+            color: #17a2b8;
+        }
+
+        .average {
+            color: #ffc107;
+        }
+
+        .poor {
+            color: #dc3545;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎯 Quiz Amélioré</h1>
+
+    <!-- Section Démarrage -->
+    <div class="quiz-section active start-section" id="startSection">
+        <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
+            Testez vos connaissances avec notre quiz interactif !<br>
+            <span style="font-size: 14px; color: #999;">3 questions • Réponses à saisir • Score final</span>
+        </p>
+        <button class="btn-primary" onclick="lancerQuiz()" style="padding: 15px 40px; font-size: 18px;">
+            ▶️ Démarrer le Quiz
+        </button>
+    </div>
+
+    <!-- Section Quiz -->
+    <div class="quiz-section" id="quizSection">
+        <div class="progress">
+            Question <span id="currentQuestion">1</span> / <span id="totalQuestions">3</span>
+        </div>
+
+        <div class="question-section">
+            <div class="question" id="questionText"></div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="answerInput" 
+                    placeholder="Votre réponse..."
+                    onkeypress="handleEnter(event)"
+                >
+                <button class="btn-primary" onclick="validerReponse()">✓ Valider</button>
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+    </div>
+
+    <!-- Section Résultats -->
+    <div class="quiz-section" id="resultsSection">
+        <div style="text-align: center;">
+            <p style="font-size: 24px; margin-bottom: 20px;">📊 Vos résultats</p>
+            <div class="score-display" id="scoreDisplay"></div>
+            <div class="score-message" id="scoreMessage"></div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="recommencerQuiz()">🔄 Recommencer</button>
+                <button class="btn-secondary" onclick="allerAccueil()">🏠 Accueil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Questions et réponses
+    const QUESTIONS = [
+        {
+            question: "Quelle est la capitale de la France ?",
+            answer: "Paris"
+        },
+        {
+            question: "2 + 2 = ?",
+            answer: "4"
+        },
+        {
+            question: "Quel langage est utilisé pour créer des pages web ?",
+            answer: "HTML"
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    function lancerQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        answered = false;
+        
+        // Masquer la section démarrage et afficher le quiz
+        document.getElementById("startSection").classList.remove("active");
+        document.getElementById("resultsSection").classList.remove("active");
+        document.getElementById("quizSection").classList.add("active");
+        
+        document.getElementById("totalQuestions").textContent = QUESTIONS.length;
+        afficherQuestion();
+    }
+
+    function afficherQuestion() {
+        answered = false;
+        const question = QUESTIONS[currentQuestionIndex];
+        
+        document.getElementById("currentQuestion").textContent = currentQuestionIndex + 1;
+        document.getElementById("questionText").textContent = question.question;
+        document.getElementById("answerInput").value = "";
+        document.getElementById("answerInput").disabled = false;
+        document.getElementById("feedback").classList.remove("show", "correct", "wrong");
+        document.getElementById("errorMessage").classList.remove("show");
+        
+        // Focus sur l'input
+        setTimeout(() => document.getElementById("answerInput").focus(), 100);
+    }
+
+    function validerReponse() {
+        if (answered) {
+            prochainQuestion();
+            return;
+        }
+
+        const userAnswer = document.getElementById("answerInput").value.trim();
+        const correctAnswer = QUESTIONS[currentQuestionIndex].answer;
+        const errorMessage = document.getElementById("errorMessage");
+
+        // Validation
+        if (userAnswer === "") {
+            errorMessage.textContent = "⚠️ Veuillez entrer une réponse !";
+            errorMessage.classList.add("show");
+            return;
+        }
+
+        errorMessage.classList.remove("show");
+        answered = true;
+
+        const feedback = document.getElementById("feedback");
+        const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+
+        if (isCorrect) {
+            feedback.textContent = "✅ Réponse correcte !";
+            feedback.classList.add("show", "correct");
+            score++;
+        } else {
+            feedback.innerHTML = `❌ Réponse fausse !<div class="correct-answer">La bonne réponse était : <strong>${correctAnswer}</strong></div>`;
+            feedback.classList.add("show", "wrong");
+        }
+
+        document.getElementById("answerInput").disabled = true;
+        
+        // Changer le texte du bouton
+        const button = document.querySelector(".btn-primary");
+        if (currentQuestionIndex < QUESTIONS.length - 1) {
+            button.textContent = "➡️ Suivant";
+        } else {
+            button.textContent = "✓ Terminer";
+        }
+    }
+
+    function prochainQuestion() {
+        currentQuestionIndex++;
+        
+        if (currentQuestionIndex < QUESTIONS.length) {
+            afficherQuestion();
+            document.querySelector(".btn-primary").textContent = "✓ Valider";
+        } else {
+            afficherResultats();
+        }
+    }
+
+    function afficherResultats() {
+        document.getElementById("quizSection").classList.remove("active");
+        document.getElementById("resultsSection").classList.add("active");
+        
+        const pourcentage = Math.round((score / QUESTIONS.length) * 100);
+        document.getElementById("scoreDisplay").textContent = `${score} / ${QUESTIONS.length}`;
+        
+        let message = "";
+        let className = "";
+        
+        if (pourcentage === 100) {
+            message = "🌟 Parfait ! Vous êtes un expert !";
+            className = "excellent";
+        } else if (pourcentage >= 66) {
+            message = "👏 Excellent travail !";
+            className = "excellent";
+        } else if (pourcentage >= 50) {
+            message = "👍 Pas mal !";
+            className = "good";
+        } else if (pourcentage >= 33) {
+            message = "📚 Vous pouvez mieux faire !";
+            className = "average";
+        } else {
+            message = "💪 Réessayez !";
+            className = "poor";
+        }
+        
+        const scoreMessage = document.getElementById("scoreMessage");
+        scoreMessage.innerHTML = `<span class="${className}">${message}</span><br><span style="color: #999; font-size: 14px;">${pourcentage}% de réussite</span>`;
+    }
+
+    function recommencerQuiz() {
+        lancerQuiz();
+    }
+
+    function allerAccueil() {
+        document.getElementById("resultsSection").classList.remove("active");
+        document.getElementById("startSection").classList.add("active");
+    }
+
+    function handleEnter(event) {
+        if (event.key === "Enter") {
+            if (answered) {
+                prochainQuestion();
+            } else {
+                validerReponse();
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
